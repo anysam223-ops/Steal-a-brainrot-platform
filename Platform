@@ -1,0 +1,105 @@
+-- LocalScript
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Frame principal
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 140) -- aumentei a altura para caber a label extra
+frame.Position = UDim2.new(0.5, -100, 0.6, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
+
+-- Label "KSC FLY"
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0.25, 0)
+titleLabel.Position = UDim2.new(0, 0, 0.05, 0)
+titleLabel.Text = "KSC FLY"
+titleLabel.TextColor3 = Color3.new(1,1,1)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextScaled = true
+titleLabel.Parent = frame
+
+-- Label pequena abaixo do título
+local subLabel = Instance.new("TextLabel")
+subLabel.Size = UDim2.new(1, 0, 0.1, 0)
+subLabel.Position = UDim2.new(0, 0, 0.28, 0)
+subLabel.Text = "tiktok:ta.bao71"
+subLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+subLabel.BackgroundTransparency = 1
+subLabel.TextScaled = true
+subLabel.Font = Enum.Font.Gotham
+subLabel.Parent = frame
+
+-- Botão RGB
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(0.8, 0, 0.45, 0)
+flyButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+flyButton.Text = "Ativar Plataforma"
+flyButton.TextColor3 = Color3.new(1,1,1)
+flyButton.Parent = frame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 8)
+buttonCorner.Parent = flyButton
+
+-- Variáveis da plataforma
+local platform = nil
+local active = false
+
+-- Criar plataforma
+local function createPlatform()
+	platform = Instance.new("Part")
+	platform.Size = Vector3.new(10,1,10)
+	platform.Anchored = true
+	platform.CanCollide = true
+	platform.Material = Enum.Material.Neon
+	platform.Color = Color3.fromRGB(0,255,0)
+	platform.Transparency = 0.2
+	platform.Parent = workspace
+
+	-- Plataforma segue o player
+	task.spawn(function()
+		while platform and platform.Parent do
+			local hipHeight = humanoid.HipHeight
+			local pos = humanoidRootPart.Position - Vector3.new(0, humanoidRootPart.Size.Y/2 + hipHeight + 1, 0)
+			platform.Position = pos
+			task.wait(0.05)
+		end
+	end)
+end
+
+-- Clique do botão
+flyButton.MouseButton1Click:Connect(function()
+	if active then
+		if platform then platform:Destroy() end
+		platform = nil
+		flyButton.Text = "Ativar Plataforma"
+	else
+		createPlatform()
+		flyButton.Text = "Desativar Plataforma"
+	end
+	active = not active
+end)
+
+-- Botão RGB (mudança de cor suave)
+task.spawn(function()
+	while true do
+		local color = Color3.fromHSV((tick()%5)/5,1,1)
+		flyButton.BackgroundColor3 = color
+		task.wait(0.1)
+	end
+end)

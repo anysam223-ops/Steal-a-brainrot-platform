@@ -1,0 +1,92 @@
+-- LocalScript (StarterPlayerScripts ou executador)
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Criando ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.8, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- UI Corner
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
+
+-- Botão
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.8, 0, 0.4, 0)
+button.Position = UDim2.new(0.1, 0, 0.3, 0)
+button.Text = "Ativar Plataforma"
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Parent = frame
+
+-- UI Corner no botão
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 8)
+buttonCorner.Parent = button
+
+-- Variáveis da plataforma
+local platform = nil
+local active = false
+
+-- Função para criar a plataforma
+local function createPlatform()
+	platform = Instance.new("Part")
+	platform.Size = Vector3.new(10, 1, 10)
+	platform.Anchored = true
+	platform.CanCollide = true
+	platform.Material = Enum.Material.Neon
+	platform.Color = Color3.fromRGB(0, 255, 0)
+	platform.Transparency = 0.2
+	platform.Parent = workspace
+
+	-- Atualizar posição da plataforma
+	task.spawn(function()
+		while platform and platform.Parent do
+			-- Pega a posição do chão logo abaixo do player
+			local hipHeight = humanoid.HipHeight
+			local pos = humanoidRootPart.Position - Vector3.new(0, humanoidRootPart.Size.Y/2 + hipHeight + 1, 0)
+
+			-- Faz a plataforma seguir e subir suavemente
+			platform.Position = pos + Vector3.new(0, (tick() % 100) * 0.02, 0)
+
+			task.wait(0.05)
+		end
+	end)
+end
+
+-- Clique do botão
+button.MouseButton1Click:Connect(function()
+	if active then
+		if platform then platform:Destroy() end
+		platform = nil
+		button.Text = "Ativar Plataforma"
+	else
+		createPlatform()
+		button.Text = "Desativar Plataforma"
+	end
+	active = not active
+end)
+
+-- Efeito de cor RGB suave (Rainbow Fade)
+task.spawn(function()
+	while true do
+		local color = Color3.fromHSV((tick() % 5) / 5, 1, 1)
+		frame.BackgroundColor3 = color
+		button.BackgroundColor3 = color
+		task.wait(0.1)
+	end
+end)
